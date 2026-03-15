@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Loader } from 'lucide-react'
 import { ErrorBanner, StepBar } from '@/components/ui/index.jsx'
-import { saveBasicInfo } from '@/lib/profile'
+import { saveBasicInfo } from '@/lib/profile.js'
 
 export default function BasicInfo() {
   const navigate         = useNavigate()

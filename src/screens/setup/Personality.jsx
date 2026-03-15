@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Loader } from 'lucide-react'
 import { ErrorBanner, StepBar, SingleSelectChips } from '@/components/ui/index.jsx'
 import { RELATIONSHIP_GOALS, PERSONALITY_TYPES } from '@/lib/mockData'
-import { savePersonality } from '@/lib/profile'
+import { savePersonality } from '@/lib/profile.js'
 
 export default function Personality() {
   const navigate         = useNavigate()

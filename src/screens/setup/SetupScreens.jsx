@@ -10,7 +10,7 @@ import {
   PHOTO_URLS,
 } from '@/lib/mockData'
 import { useAuthStore } from '@/store'
-import { saveLifestyle, uploadPhotos } from '@/lib/profile'
+import { saveLifestyle, uploadPhotos } from '@/lib/profile.js'
 
 // ─────────────────────────────────────────────
 // LIFESTYLE
