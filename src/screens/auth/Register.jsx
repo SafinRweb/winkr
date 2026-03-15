@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Check, ArrowLeft, Eye, EyeOff, Loader } from 'lucide-react'
+import { Check, ArrowLeft, Eye, EyeOff } from 'lucide-react'
 import { ErrorBanner } from '@/components/ui/index.jsx'
 import { PHOTO_URLS } from '@/lib/mockData'
-import { signUp } from '@/lib/auth'
+import { signUp } from '@/lib/auth.js'
 import { useAuthStore } from '@/store'
 
 const REG_FRAMES = [
@@ -20,26 +20,40 @@ const REG_FRAMES = [
 ]
 
 export default function Register() {
-  const navigate            = useNavigate()
-  const login               = useAuthStore((s) => s.login)
-  const [name,   setName]   = useState('')
-  const [email,  setEmail]  = useState('')
-  const [pass,   setPass]   = useState('')
-  const [showP,  setShowP]  = useState(false)
-  const [agreed, setAgreed] = useState(false)
-  const [error,  setError]  = useState('')
+  const navigate = useNavigate()
+  const login    = useAuthStore((s) => s.login)
+
+  const [name,    setName]    = useState('')
+  const [email,   setEmail]   = useState('')
+  const [pass,    setPass]    = useState('')
+  const [confirm, setConfirm] = useState('')
+  const [showP,   setShowP]   = useState(false)
+  const [showC,   setShowC]   = useState(false)
+  const [agreed,  setAgreed]  = useState(false)
+  const [error,   setError]   = useState('')
   const [loading, setLoading] = useState(false)
 
+  // Button is enabled only when ALL fields are filled AND terms accepted
+  const canSubmit = name.trim() && email.trim() && pass.trim() && confirm.trim() && agreed && !loading
+
   const handleSubmit = async () => {
-    if (!name || !email || !pass) { setError('Please fill in all fields'); return }
-    if (pass.length < 6)          { setError('Password must be at least 6 characters'); return }
-    if (!agreed)                  { setError('Please accept the terms to continue'); return }
+    if (!canSubmit) return
+
+    // Validation
+    if (pass.length < 6) {
+      setError('Password must be at least 6 characters')
+      return
+    }
+    if (pass !== confirm) {
+      setError('Passwords do not match')
+      return
+    }
 
     setLoading(true)
     setError('')
     try {
       await signUp(name, email, pass)
-      login() // update local state
+      login()
       navigate('/setup/basic')
     } catch (err) {
       setError(err.message)
@@ -51,6 +65,7 @@ export default function Register() {
   return (
     <div className="relative min-h-dvh bg-bg-primary overflow-hidden flex flex-col px-6 pt-14 pb-10">
 
+      {/* Background frames */}
       {REG_FRAMES.map((f, i) => (
         <div key={i} className="photo-frame" style={{
           width: f.w, height: f.h, position: 'absolute', top: f.top, left: f.left,
@@ -62,14 +77,17 @@ export default function Register() {
         </div>
       ))}
 
+      {/* Overlay */}
       <div className="absolute inset-0 pointer-events-none" style={{
         background: `linear-gradient(to bottom, rgba(13,11,11,0.40) 0%, rgba(13,11,11,0.72) 16%, rgba(13,11,11,0.80) 78%, rgba(13,11,11,0.42) 100%)`,
         zIndex: 1,
       }} />
 
+      {/* Content */}
       <div className="relative z-10 flex flex-col flex-1">
         <button onClick={() => navigate('/login')}
-          className="text-text-hint mb-8 self-start flex items-center gap-1.5 text-sm font-sans">
+          className="text-text-hint mb-8 self-start flex items-center gap-1.5 text-sm font-sans"
+          disabled={loading}>
           <ArrowLeft size={18} /> Back
         </button>
 
@@ -81,26 +99,70 @@ export default function Register() {
         <ErrorBanner message={error} onDismiss={() => setError('')} />
 
         <div className="flex flex-col gap-3.5 mb-6">
-          <input type="text" value={name} onChange={(e) => setName(e.target.value)}
-            placeholder="Full name" className="winkr-input" disabled={loading} />
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email address" className="winkr-input" disabled={loading} />
+          {/* Name */}
+          <input
+            type="text" value={name}
+            onChange={(e) => { setName(e.target.value); setError('') }}
+            placeholder="Full name"
+            className="winkr-input" disabled={loading}
+          />
+
+          {/* Email */}
+          <input
+            type="email" value={email}
+            onChange={(e) => { setEmail(e.target.value); setError('') }}
+            placeholder="Email address"
+            className="winkr-input" disabled={loading}
+          />
+
+          {/* Password */}
           <div className="relative">
-            <input type={showP ? 'text' : 'password'} value={pass}
-              onChange={(e) => setPass(e.target.value)}
+            <input
+              type={showP ? 'text' : 'password'} value={pass}
+              onChange={(e) => { setPass(e.target.value); setError('') }}
               placeholder="Password (min 6 characters)"
-              className="winkr-input pr-12" disabled={loading} />
+              className="winkr-input pr-12" disabled={loading}
+            />
             <button type="button" onClick={() => setShowP(!showP)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-text-hint">
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-text-hint"
+              disabled={loading}>
               {showP ? <EyeOff size={17} /> : <Eye size={17} />}
             </button>
           </div>
+
+          {/* Confirm Password */}
+          <div className="relative">
+            <input
+              type={showC ? 'text' : 'password'} value={confirm}
+              onChange={(e) => { setConfirm(e.target.value); setError('') }}
+              placeholder="Confirm password"
+              className={`winkr-input pr-12 ${
+                confirm && pass !== confirm ? 'border-red-400/60' : ''
+              }`}
+              disabled={loading}
+            />
+            <button type="button" onClick={() => setShowC(!showC)}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-text-hint"
+              disabled={loading}>
+              {showC ? <EyeOff size={17} /> : <Eye size={17} />}
+            </button>
+          </div>
+
+          {/* Password mismatch hint */}
+          {confirm && pass !== confirm && (
+            <p className="text-red-400 text-xs font-sans -mt-2 ml-1">
+              Passwords do not match
+            </p>
+          )}
         </div>
 
+        {/* Terms */}
         <label className="flex items-start gap-3 mb-8 cursor-pointer">
-          <div onClick={() => !loading && setAgreed(!agreed)}
-            className={`w-5 h-5 rounded-md border flex items-center justify-center shrink-0 mt-0.5 transition-colors
-              ${agreed ? 'bg-coral border-coral' : 'border-divider'}`}>
+          <div
+            onClick={() => !loading && setAgreed(!agreed)}
+            className={`w-5 h-5 rounded-md border flex items-center justify-center shrink-0 mt-0.5 transition-colors cursor-pointer
+              ${agreed ? 'bg-coral border-coral' : 'border-divider'}`}
+          >
             {agreed && <Check size={12} className="text-white" />}
           </div>
           <p className="text-text-second text-sm font-sans leading-relaxed">
@@ -109,23 +171,27 @@ export default function Register() {
           </p>
         </label>
 
+        {/* Submit button */}
         <button
           onClick={handleSubmit}
-          disabled={!agreed || loading}
-          className="winkr-btn mb-5 relative"
+          disabled={!canSubmit}
+          className="winkr-btn mb-5"
+          style={{ opacity: canSubmit ? 1 : 0.45 }}
         >
-          {loading && (
-            <Loader
-              size={16}
-              className="animate-spin absolute left-6 top-1/2 -translate-y-1/2"
-            />
-          )}
-          {loading ? 'Creating account...' : 'Create Account'}
+          {loading ? (
+            <span className="flex items-center justify-center gap-2">
+              <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="white" strokeWidth="4"/>
+                <path className="opacity-75" fill="white" d="M4 12a8 8 0 018-8v8z"/>
+              </svg>
+              Creating account...
+            </span>
+          ) : 'Create Account'}
         </button>
 
         <p className="text-text-hint text-sm font-sans text-center">
           Already have an account?{' '}
-          <button onClick={() => navigate('/login')} className="text-coral font-medium">
+          <button onClick={() => navigate('/login')} className="text-coral font-medium" disabled={loading}>
             Sign in
           </button>
         </p>

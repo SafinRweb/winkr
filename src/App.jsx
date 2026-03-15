@@ -53,6 +53,11 @@ const HIDE_NAV = [
   '/app/notifications', '/app/reviews', '/app/help','/confirm-email',
 ]
 
+function Protected({ children }) {
+  const isLoggedIn = useAuthStore((s) => s.isLoggedIn)
+  return isLoggedIn ? children : <Navigate to="/welcome" replace />
+}
+
 function BottomNav() {
   const location = useLocation()
   const navigate = useNavigate()
@@ -105,8 +110,8 @@ export default function App() {
     <>
       <Routes>
         {/* Default */}
-        <Route path="/" element={<Navigate to="/welcome" replace />} />
-
+        <Route path="/" element={
+          <Navigate to={useAuthStore.getState().isLoggedIn ? '/app/home' : '/welcome'} replace />} />
         {/* Auth */}
         <Route path="/welcome"          element={<Welcome />} />
         <Route path="/login"            element={<Login />} />
