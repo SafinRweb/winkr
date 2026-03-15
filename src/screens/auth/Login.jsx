@@ -4,6 +4,7 @@ import { useAuthStore } from '@/store'
 import { Eye, EyeOff, ArrowLeft, Loader } from 'lucide-react'
 import { PHOTO_URLS } from '@/lib/mockData'
 import { signIn } from '@/lib/auth'
+import { ErrorBanner, StepBar, LoadingDots } from '@/components/ui/index.jsx'
 
 // Entry: 10 frames, non-overlapping rows
 const ENTRY_FRAMES = [
@@ -92,18 +93,8 @@ export default function Login() {
           </div>
         </div>
         <button onClick={() => navigate('/forgot-password')} className="text-coral text-sm font-sans mb-8 text-right block w-full">Forgot password?</button>
-        <button
-          onClick={handleLogin}
-          disabled={loading}
-          className="winkr-btn mb-5 relative"
-        >
-          {loading && (
-            <Loader
-              size={16}
-              className="animate-spin absolute left-6 top-1/2 -translate-y-1/2"
-            />
-          )}
-          {loading ? 'Signing in...' : 'Sign In'}
+        <button onClick={handleLogin} disabled={loading} className="winkr-btn mb-5">
+          {loading ? <LoadingDots /> : 'Sign In'}
         </button>
         <p className="text-text-hint text-sm font-sans text-center">
           New here? <button onClick={() => navigate('/register')} className="text-coral font-medium">Create account</button>

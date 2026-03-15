@@ -232,3 +232,8 @@ select option { background-color: #1A1614; color: #F5EEE8; }
   animation: breatheGlow 2.4s ease-in-out infinite;
   border-radius: 50%;
 }
+
+@keyframes loadingDot {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+  40%           { transform: scale(1);   opacity: 1;   }
+}

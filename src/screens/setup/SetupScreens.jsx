@@ -12,6 +12,7 @@ import {
 import { useAuthStore } from '@/store'
 import { saveLifestyle, uploadPhotos } from '@/lib/profile.js'
 import { sendConfirmationEmail } from '@/lib/auth.js'
+import { LoadingDots } from '@/components/ui/index.jsx'
 
 // ─────────────────────────────────────────────
 // LIFESTYLE
@@ -131,11 +132,9 @@ export function PhotoUpload() {
     try {
       setProgress('Uploading photos...')
       await uploadPhotos(photos)
-
-      setProgress('Sending confirmation email...')
-      await sendConfirmationEmail()
-
-      // Navigate to confirmation waiting screen
+      setProgress('Almost done...')
+      // No need to send email — Supabase already sent it at signup
+      // Just navigate to the confirmation waiting screen
       navigate('/confirm-email')
     } catch (err) {
       setError(err.message)
@@ -144,6 +143,7 @@ export function PhotoUpload() {
       setProgress('')
     }
   }
+
   return (
     <div className="min-h-dvh bg-bg-primary flex flex-col px-6 pt-12 pb-10">
       <StepBar current={4} total={4} onBack={() => navigate('/setup/lifestyle')} />
@@ -216,14 +216,11 @@ export function PhotoUpload() {
       )}
 
       <button
-        onClick={handleFinish}
-        disabled={photos.length === 0 || loading}
-        className="winkr-btn mt-auto relative"
+        onClick={handleContinue}
+        disabled={loading}
+        className="winkr-btn mt-8"
       >
-        {loading && (
-          <Loader size={16} className="animate-spin absolute left-6 top-1/2 -translate-y-1/2" />
-        )}
-        {loading ? 'Uploading...' : 'Finish Setup'}
+        {loading ? <LoadingDots /> : 'Continue'}
       </button>
     </div>
   )

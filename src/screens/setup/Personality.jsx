@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Loader } from 'lucide-react'
-import { ErrorBanner, StepBar, SingleSelectChips } from '@/components/ui/index.jsx'
+import { ErrorBanner, StepBar, LoadingDots } from '@/components/ui/index.jsx'
+import { SingleSelectChips } from '@/components/ui/index.jsx'
 import { RELATIONSHIP_GOALS, PERSONALITY_TYPES } from '@/lib/mockData'
 import { savePersonality } from '@/lib/profile.js'
 
@@ -102,12 +102,9 @@ export default function Personality() {
       <button
         onClick={handleContinue}
         disabled={loading}
-        className="winkr-btn mt-8 relative"
+        className="winkr-btn mt-8"
       >
-        {loading && (
-          <Loader size={16} className="animate-spin absolute left-6 top-1/2 -translate-y-1/2" />
-        )}
-        {loading ? 'Saving...' : 'Continue'}
+        {loading ? <LoadingDots /> : 'Continue'}
       </button>
     </div>
   )

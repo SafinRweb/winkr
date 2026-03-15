@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Check, Plus, X, ChevronRight } from 'lucide-react'
+import { Check, Plus, X } from 'lucide-react'
 
 // ─────────────────────────────────────────────
 // BUTTON
@@ -223,5 +223,25 @@ export function StepBar({ current, total, onBack }) {
         ))}
       </div>
     </div>
+  )
+}
+
+// ─────────────────────────────────────────────
+// LOADING DOTS
+// ─────────────────────────────────────────────
+export function LoadingDots() {
+  return (
+    <span className="flex items-center justify-center gap-1.5">
+      {[0, 1, 2].map((i) => (
+        <span
+          key={i}
+          className="w-1.5 h-1.5 rounded-full bg-white"
+          style={{
+            animation: 'loadingDot 1.2s ease-in-out infinite',
+            animationDelay: `${i * 0.2}s`,
+          }}
+        />
+      ))}
+    </span>
   )
 }

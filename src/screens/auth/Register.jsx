@@ -5,6 +5,7 @@ import { ErrorBanner } from '@/components/ui/index.jsx'
 import { PHOTO_URLS } from '@/lib/mockData'
 import { signUp } from '@/lib/auth.js'
 import { useAuthStore } from '@/store'
+import { LoadingDots } from '@/components/ui/index.jsx'
 
 const REG_FRAMES = [
   { url: PHOTO_URLS[1], w: 98, h: 125, blurred: false, top:   0, left: 278, rot: -7, op: 0.50, delay: '0s'   },
@@ -172,21 +173,8 @@ export default function Register() {
         </label>
 
         {/* Submit button */}
-        <button
-          onClick={handleSubmit}
-          disabled={!canSubmit}
-          className="winkr-btn mb-5"
-          style={{ opacity: canSubmit ? 1 : 0.45 }}
-        >
-          {loading ? (
-            <span className="flex items-center justify-center gap-2">
-              <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="white" strokeWidth="4"/>
-                <path className="opacity-75" fill="white" d="M4 12a8 8 0 018-8v8z"/>
-              </svg>
-              Creating account...
-            </span>
-          ) : 'Create Account'}
+        <button onClick={handleSubmit} disabled={!canSubmit} className="winkr-btn mb-5">
+          {loading ? <LoadingDots /> : 'Create Account'}
         </button>
 
         <p className="text-text-hint text-sm font-sans text-center">
