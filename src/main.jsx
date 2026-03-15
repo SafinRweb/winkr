@@ -1,4 +1,4 @@
-import { StrictMode, useEffect } from 'react'
+import { StrictMode, useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import App from './App'
@@ -7,27 +7,42 @@ import { supabase } from '@/lib/supabase'
 import { useAuthStore } from '@/store'
 
 function Root() {
-  useEffect(() => {
-    // Restore session on page load
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        useAuthStore.setState({ isLoggedIn: true, supabaseUser: session.user })
-      }
-    })
+  const [ready, setReady] = useState(false)
 
-    // Listen for login/logout changes
-    supabase.auth.onAuthStateChange((event, session) => {
+  useEffect(() => {
+    // Get session once on load
+    supabase.auth.getSession().then(({ data: { session } }) => {
       useAuthStore.setState({
         isLoggedIn:   !!session,
         supabaseUser: session?.user ?? null,
       })
-
-      // When email is confirmed, redirect to home
-      if (event === 'SIGNED_IN' && session?.user?.email_confirmed_at) {
-        window.location.href = '/app/home'
-      }
+      setReady(true) // only render app after auth is known
     })
+
+    // Listen for changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      useAuthStore.setState({
+        isLoggedIn:   !!session,
+        supabaseUser: session?.user ?? null,
+      })
+    })
+
+    return () => subscription.unsubscribe()
   }, [])
+
+  // Show nothing until we know if user is logged in
+  if (!ready) return (
+    <div style={{
+      minHeight: '100dvh',
+      background: '#0D0B0B',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    }}>
+      <img src="/winkr_logo.png" alt="Winkr"
+        style={{ width: 56, height: 56, borderRadius: 16, animation: 'pulseSoft 1.5s ease-in-out infinite' }} />
+    </div>
+  )
 
   return <App />
 }
