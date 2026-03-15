@@ -1,0 +1,234 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ═══════════════════════════════════════════
+   BASE
+═══════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body, #root {
+  height: 100%;
+  background-color: #0D0B0B;
+  color: #F5EEE8;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Phone-width container on desktop */
+#root {
+  max-width: 430px;
+  margin: 0 auto;
+  min-height: 100dvh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Hide scrollbar */
+::-webkit-scrollbar { width: 0; background: transparent; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Select dropdown fix */
+select option { background-color: #1A1614; color: #F5EEE8; }
+
+
+/* ═══════════════════════════════════════════
+   REUSABLE COMPONENTS
+═══════════════════════════════════════════ */
+
+/* --- Primary button --- */
+.winkr-btn {
+  background: #E85D4A;
+  color: white;
+  border-radius: 28px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  padding: 16px 24px;
+  width: 100%;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 8px 32px rgba(232,93,74,0.35);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  display: block;
+  text-align: center;
+}
+.winkr-btn:hover  { transform: translateY(-1px); box-shadow: 0 12px 40px rgba(232,93,74,0.45); }
+.winkr-btn:active { transform: translateY(0); }
+.winkr-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* --- Outline button --- */
+.winkr-btn-outline {
+  background: transparent;
+  color: #F5EEE8;
+  border: 1px solid #2C2421;
+  border-radius: 28px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  font-size: 15px;
+  padding: 15px 24px;
+  width: 100%;
+  cursor: pointer;
+  transition: border-color 0.18s, color 0.18s;
+  display: block;
+  text-align: center;
+}
+.winkr-btn-outline:hover { border-color: #E85D4A; color: #E85D4A; }
+
+/* --- Text input --- */
+.winkr-input {
+  background: #1A1614;
+  border: 1px solid #5C2E28;
+  border-radius: 14px;
+  color: #F5EEE8;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  padding: 14px 16px;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.2s;
+  display: block;
+}
+.winkr-input::placeholder { color: #6B5C58; }
+.winkr-input:focus         { border-color: #E85D4A; }
+
+/* --- Card --- */
+.winkr-card {
+  background: #1A1614;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+}
+
+/* --- Floating photo frame --- */
+.photo-frame {
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.55);
+  position: absolute;
+  /* GPU layer — prevents paint stutters */
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* --- Frosted glass nav --- */
+.glass-nav {
+  background: rgba(26, 22, 20, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 0.5px solid rgba(44,36,33,0.65);
+}
+
+/* --- Chip --- */
+.winkr-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 7px 14px;
+  border-radius: 22px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid #2C2421;
+  background: #1A1614;
+  color: #B0A09A;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  user-select: none;
+}
+.winkr-chip:hover  { border-color: #5C2E28; color: #F5EEE8; }
+.winkr-chip.active {
+  border-color: #E85D4A;
+  background: rgba(232,93,74,0.10);
+  color: #E85D4A;
+  font-weight: 600;
+}
+
+/* --- Section overline label --- */
+.overline {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6B5C58;
+}
+
+/* --- Bottom nav padding spacer --- */
+.pb-nav { padding-bottom: calc(90px + env(safe-area-inset-bottom, 0px)); }
+
+
+/* ═══════════════════════════════════════════
+   ANIMATIONS
+═══════════════════════════════════════════ */
+
+/* Fade up — used on page entry */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translate3d(0, 20px, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0,    0); }
+}
+.animate-fade-up {
+  animation: fadeUp 0.5s ease both;
+}
+
+/* Fade in */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.animate-fade-in {
+  animation: fadeIn 0.4s ease both;
+}
+
+/* Animation delay helpers */
+.delay-100 { animation-delay: 0.10s; }
+.delay-200 { animation-delay: 0.20s; }
+.delay-300 { animation-delay: 0.30s; }
+.delay-400 { animation-delay: 0.40s; }
+
+/* Gentle float — for photo frames on Welcome */
+@keyframes floatFrame {
+  0%   { transform: translateY(0px); }
+  50%  { transform: translateY(-9px); }
+  100% { transform: translateY(0px); }
+}
+
+/* Soft pulse — for wink heart */
+@keyframes pulseSoft {
+  0%, 100% { transform: scale(1);    opacity: 1;   }
+  50%       { transform: scale(1.08); opacity: 0.8; }
+}
+.animate-pulse-soft {
+  animation: pulseSoft 2s ease-in-out infinite;
+}
+
+/* Blur utility for match photos */
+.photo-blur {
+  filter: blur(22px);
+  transform: scale(1.08);
+}
+
+/* Breathing glow — for wink button */
+@keyframes breatheGlow {
+  0%, 100% {
+    box-shadow: 0 0 6px 2px rgba(232, 93, 74, 0.25);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 18px 6px rgba(232, 93, 74, 0.55);
+    transform: scale(1.08);
+  }
+}
+
+.wink-breathe {
+  animation: breatheGlow 2.4s ease-in-out infinite;
+  border-radius: 50%;
+}
