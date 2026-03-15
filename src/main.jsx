@@ -7,19 +7,6 @@ import { supabase } from '@/lib/supabase'
 import { useAuthStore } from '@/store'
 import { flushSetupToSupabase } from '@/lib/profile.js'
 
-supabase.auth.onAuthStateChange(async (event, session) => {
-  useAuthStore.setState({
-    isLoggedIn:   !!session,
-    supabaseUser: session?.user ?? null,
-  })
-
-  // After email confirmed and signed in — push local setup data to Supabase
-  if (event === 'SIGNED_IN' && session?.user?.email_confirmed_at) {
-    await flushSetupToSupabase()
-    window.location.href = '/app/home'
-  }
-})
-
 function Root() {
   const [ready, setReady] = useState(false)
 
@@ -30,21 +17,30 @@ function Root() {
         isLoggedIn:   !!session,
         supabaseUser: session?.user ?? null,
       })
-      setReady(true) // only render app after auth is known
+      setReady(true)
     })
 
-    // Listen for changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    // Listen for auth changes — NO redirects here
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       useAuthStore.setState({
         isLoggedIn:   !!session,
         supabaseUser: session?.user ?? null,
       })
+
+      // After email confirmed — flush setup data to Supabase
+      // But don't redirect — let React Router handle navigation
+      if (event === 'SIGNED_IN' && session?.user?.email_confirmed_at) {
+        try {
+          await flushSetupToSupabase()
+        } catch (e) {
+          console.error('flush error', e)
+        }
+      }
     })
 
     return () => subscription.unsubscribe()
   }, [])
 
-  // Show nothing until we know if user is logged in
   if (!ready) return (
     <div style={{
       minHeight: '100dvh',
@@ -53,8 +49,11 @@ function Root() {
       alignItems: 'center',
       justifyContent: 'center',
     }}>
-      <img src="/winkr_logo.png" alt="Winkr"
-        style={{ width: 56, height: 56, borderRadius: 16, animation: 'pulseSoft 1.5s ease-in-out infinite' }} />
+      <img
+        src="/winkr_logo.png"
+        alt="Winkr"
+        style={{ width: 56, height: 56, borderRadius: 16, opacity: 0.8 }}
+      />
     </div>
   )
 
