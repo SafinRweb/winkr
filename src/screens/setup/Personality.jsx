@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Loader } from 'lucide-react'
 import { ErrorBanner, StepBar, SingleSelectChips } from '@/components/ui/index.jsx'
 import { RELATIONSHIP_GOALS, PERSONALITY_TYPES } from '@/lib/mockData'
+import { savePersonality } from '@/lib/profile'
 
 export default function Personality() {
-  const navigate = useNavigate()
+  const navigate         = useNavigate()
   const [bio,     setBio]     = useState('')
   const [goal,    setGoal]    = useState('')
   const [ptype,   setPtype]   = useState('')
@@ -15,8 +17,9 @@ export default function Personality() {
   const [color,   setColor]   = useState('')
   const [special, setSpecial] = useState('')
   const [error,   setError]   = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (bio.trim().length < 20) {
       setError('Tell them a bit about yourself — at least 20 characters 💜')
       return
@@ -25,7 +28,27 @@ export default function Personality() {
       setError("Let them know what you're looking for — select a relationship goal")
       return
     }
-    navigate('/setup/lifestyle')
+
+    setLoading(true)
+    setError('')
+    try {
+      await savePersonality({
+        bio,
+        relationshipGoal: goal,
+        personalityType:  ptype,
+        mbti,
+        favoriteMusic:    music,
+        favoriteSinger:   singer,
+        favoriteBand:     band,
+        favoriteColor:    color,
+        special,
+      })
+      navigate('/setup/lifestyle')
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -40,14 +63,18 @@ export default function Personality() {
       <ErrorBanner message={error} onDismiss={() => setError('')} />
 
       <div className="flex flex-col gap-6">
-        {/* Bio — required */}
-        <textarea
-          value={bio} onChange={(e) => setBio(e.target.value)}
-          placeholder="Write a short bio..." rows={4} maxLength={300}
-          className="winkr-input resize-none"
-        />
+        <div>
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-text-second text-sm font-medium font-sans">Bio</span>
+            <span className="text-text-hint text-xs">{bio.length}/300</span>
+          </div>
+          <textarea
+            value={bio} onChange={(e) => setBio(e.target.value)}
+            placeholder="Write a short bio..." rows={4} maxLength={300}
+            className="winkr-input resize-none" disabled={loading}
+          />
+        </div>
 
-        {/* Relationship goal — required */}
         <div>
           <div className="flex items-center gap-1.5 mb-3">
             <span className="text-text-second text-sm font-medium font-sans">Relationship Goal</span>
@@ -56,7 +83,6 @@ export default function Personality() {
           <SingleSelectChips options={RELATIONSHIP_GOALS} selected={goal} onSelect={setGoal} />
         </div>
 
-        {/* Personality type — optional */}
         <div>
           <div className="flex items-center gap-2 mb-3">
             <span className="text-text-second text-sm font-medium font-sans">Personality Type</span>
@@ -65,16 +91,24 @@ export default function Personality() {
           <SingleSelectChips options={PERSONALITY_TYPES} selected={ptype} onSelect={setPtype} />
         </div>
 
-        {/* Optional fields */}
-        <input value={mbti}    onChange={(e) => setMbti(e.target.value)}    placeholder="MBTI type, e.g. INFP (optional)"        className="winkr-input" />
-        <input value={music}   onChange={(e) => setMusic(e.target.value)}   placeholder="Favorite music genre (optional)"        className="winkr-input" />
-        <input value={singer}  onChange={(e) => setSinger(e.target.value)}  placeholder="Favorite singer (optional)"             className="winkr-input" />
-        <input value={band}    onChange={(e) => setBand(e.target.value)}    placeholder="Favorite band (optional)"               className="winkr-input" />
-        <input value={color}   onChange={(e) => setColor(e.target.value)}   placeholder="Favorite color (optional)"             className="winkr-input" />
-        <input value={special} onChange={(e) => setSpecial(e.target.value)} placeholder="Anything you want them to know? ✨ (optional)" maxLength={150} className="winkr-input" />
+        <input value={mbti}    onChange={(e) => setMbti(e.target.value)}    placeholder="MBTI type, e.g. INFP (optional)"              className="winkr-input" disabled={loading} />
+        <input value={music}   onChange={(e) => setMusic(e.target.value)}   placeholder="Favorite music genre (optional)"               className="winkr-input" disabled={loading} />
+        <input value={singer}  onChange={(e) => setSinger(e.target.value)}  placeholder="Favorite singer (optional)"                    className="winkr-input" disabled={loading} />
+        <input value={band}    onChange={(e) => setBand(e.target.value)}    placeholder="Favorite band (optional)"                      className="winkr-input" disabled={loading} />
+        <input value={color}   onChange={(e) => setColor(e.target.value)}   placeholder="Favorite color (optional)"                     className="winkr-input" disabled={loading} />
+        <input value={special} onChange={(e) => setSpecial(e.target.value)} placeholder="Anything you want them to know? ✨ (optional)" className="winkr-input" maxLength={150} disabled={loading} />
       </div>
 
-      <button onClick={handleContinue} className="winkr-btn mt-8">Continue</button>
+      <button
+        onClick={handleContinue}
+        disabled={loading}
+        className="winkr-btn mt-8 relative"
+      >
+        {loading && (
+          <Loader size={16} className="animate-spin absolute left-6 top-1/2 -translate-y-1/2" />
+        )}
+        {loading ? 'Saving...' : 'Continue'}
+      </button>
     </div>
   )
 }

@@ -1,16 +1,18 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Loader } from 'lucide-react'
 import { ErrorBanner, StepBar } from '@/components/ui/index.jsx'
+import { saveBasicInfo } from '@/lib/profile'
 
 export default function BasicInfo() {
-  const navigate = useNavigate()
-  const [city,   setCity]   = useState('')
-  const [age,    setAge]    = useState('')
-  const [height, setHeight] = useState('')
-  const [edu,    setEdu]    = useState('')
-  const [error,  setError]  = useState('')
+  const navigate         = useNavigate()
+  const [city,    setCity]    = useState('')
+  const [age,     setAge]     = useState('')
+  const [height,  setHeight]  = useState('')
+  const [edu,     setEdu]     = useState('')
+  const [error,   setError]   = useState('')
+  const [loading, setLoading] = useState(false)
 
-  // Live feet/inches conversion
   const heightFt = (() => {
     const cm = parseInt(height)
     if (cm >= 100 && cm <= 220) {
@@ -21,10 +23,20 @@ export default function BasicInfo() {
     return ''
   })()
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (!city || !age || !height || !edu) { setError('Please fill in all fields'); return }
-    if (parseInt(age) < 18)              { setError('You must be 18 or older'); return }
-    navigate('/setup/personality')
+    if (parseInt(age) < 18)               { setError('You must be 18 or older'); return }
+
+    setLoading(true)
+    setError('')
+    try {
+      await saveBasicInfo({ city, age, heightCm: height, education: edu })
+      navigate('/setup/personality')
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -41,19 +53,17 @@ export default function BasicInfo() {
       <div className="flex flex-col gap-4 flex-1">
         <input
           value={city} onChange={(e) => setCity(e.target.value)}
-          placeholder="Your city"
-          className="winkr-input"
+          placeholder="Your city" className="winkr-input" disabled={loading}
         />
         <input
           value={age} onChange={(e) => setAge(e.target.value)}
-          type="number" placeholder="Age"
-          className="winkr-input"
+          type="number" placeholder="Age" className="winkr-input" disabled={loading}
         />
         <div>
           <input
             value={height} onChange={(e) => setHeight(e.target.value)}
             type="number" placeholder="Height in cm"
-            className="winkr-input"
+            className="winkr-input" disabled={loading}
           />
           {heightFt && (
             <p className="text-coral text-xs font-sans mt-1.5 ml-1">{heightFt}</p>
@@ -61,17 +71,26 @@ export default function BasicInfo() {
         </div>
         <select
           value={edu} onChange={(e) => setEdu(e.target.value)}
-          className="winkr-input"
-          style={{ background: '#1A1614' }}
+          className="winkr-input" style={{ background: '#1A1614' }}
+          disabled={loading}
         >
           <option value="" disabled>Education level</option>
-          {["High School", "Bachelor's", "Master's", "PhD", "Other"].map((o) => (
+          {["High School","Bachelor's","Master's","PhD","Other"].map((o) => (
             <option key={o} value={o}>{o}</option>
           ))}
         </select>
       </div>
 
-      <button onClick={handleContinue} className="winkr-btn mt-8">Continue</button>
+      <button
+        onClick={handleContinue}
+        disabled={loading}
+        className="winkr-btn mt-8 relative"
+      >
+        {loading && (
+          <Loader size={16} className="animate-spin absolute left-6 top-1/2 -translate-y-1/2" />
+        )}
+        {loading ? 'Saving...' : 'Continue'}
+      </button>
     </div>
   )
 }
