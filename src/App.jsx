@@ -31,6 +31,7 @@ import {
   Preferences, Reviews, HelpSupport,
   PersonalInfo, Privacy, ChangePassword, BlockedUsers,
 } from '@/screens/profile/ProfileScreens'
+import ConfirmEmail from '@/screens/auth/ConfirmEmail'
 
 // ─────────────────────────────────────────────
 // BOTTOM NAV
@@ -49,7 +50,7 @@ const HIDE_NAV = [
   '/app/chat/', '/app/match/', '/app/wink/',
   '/app/edit-profile', '/app/my-profile',
   '/app/preferences', '/app/premium',
-  '/app/notifications', '/app/reviews', '/app/help',
+  '/app/notifications', '/app/reviews', '/app/help','/confirm-email',
 ]
 
 function BottomNav() {
@@ -142,6 +143,7 @@ export default function App() {
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/welcome" replace />} />
+        <Route path="/confirm-email" element={<ConfirmEmail />} />
       </Routes>
 
       <BottomNav />

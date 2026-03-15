@@ -11,6 +11,7 @@ import {
 } from '@/lib/mockData'
 import { useAuthStore } from '@/store'
 import { saveLifestyle, uploadPhotos } from '@/lib/profile.js'
+import { sendConfirmationEmail } from '@/lib/auth.js'
 
 // ─────────────────────────────────────────────
 // LIFESTYLE
@@ -130,9 +131,12 @@ export function PhotoUpload() {
     try {
       setProgress('Uploading photos...')
       await uploadPhotos(photos)
-      setProgress('Almost done...')
-      login()
-      navigate('/app/home')
+
+      setProgress('Sending confirmation email...')
+      await sendConfirmationEmail()
+
+      // Navigate to confirmation waiting screen
+      navigate('/confirm-email')
     } catch (err) {
       setError(err.message)
     } finally {
@@ -140,7 +144,6 @@ export function PhotoUpload() {
       setProgress('')
     }
   }
-
   return (
     <div className="min-h-dvh bg-bg-primary flex flex-col px-6 pt-12 pb-10">
       <StepBar current={4} total={4} onBack={() => navigate('/setup/lifestyle')} />

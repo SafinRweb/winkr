@@ -16,11 +16,16 @@ function Root() {
     })
 
     // Listen for login/logout changes
-    supabase.auth.onAuthStateChange((_event, session) => {
+    supabase.auth.onAuthStateChange((event, session) => {
       useAuthStore.setState({
         isLoggedIn:   !!session,
         supabaseUser: session?.user ?? null,
       })
+
+      // When email is confirmed, redirect to home
+      if (event === 'SIGNED_IN' && session?.user?.email_confirmed_at) {
+        window.location.href = '/app/home'
+      }
     })
   }, [])
 

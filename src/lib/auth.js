@@ -49,3 +49,14 @@ export async function getUserProfile(userId) {
   if (error) throw error
   return data
 }
+// confirmation email
+export async function sendConfirmationEmail() {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not logged in')
+
+  const { error } = await supabase.auth.resend({
+    type:  'signup',
+    email: user.email,
+  })
+  if (error) throw error
+}
