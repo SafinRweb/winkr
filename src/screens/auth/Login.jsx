@@ -92,8 +92,18 @@ export default function Login() {
           </div>
         </div>
         <button onClick={() => navigate('/forgot-password')} className="text-coral text-sm font-sans mb-8 text-right block w-full">Forgot password?</button>
-        <button onClick={handleLogin} disabled={loading} className="winkr-btn mb-5 flex items-center justify-center gap-2">
-          {loading ? <><Loader size={16} className="animate-spin" /> Signing in...</> : 'Sign In'}
+        <button
+          onClick={handleLogin}
+          disabled={loading}
+          className="winkr-btn mb-5 relative"
+        >
+          {loading && (
+            <Loader
+              size={16}
+              className="animate-spin absolute left-6 top-1/2 -translate-y-1/2"
+            />
+          )}
+          {loading ? 'Signing in...' : 'Sign In'}
         </button>
         <p className="text-text-hint text-sm font-sans text-center">
           New here? <button onClick={() => navigate('/register')} className="text-coral font-medium">Create account</button>

@@ -112,14 +112,15 @@ export default function Register() {
         <button
           onClick={handleSubmit}
           disabled={!agreed || loading}
-          className="winkr-btn mb-5 flex items-center justify-center gap-2"
+          className="winkr-btn mb-5 relative"
         >
-          {loading ? (
-            <>
-              <Loader size={16} className="animate-spin" />
-              Creating account...
-            </>
-          ) : 'Create Account'}
+          {loading && (
+            <Loader
+              size={16}
+              className="animate-spin absolute left-6 top-1/2 -translate-y-1/2"
+            />
+          )}
+          {loading ? 'Creating account...' : 'Create Account'}
         </button>
 
         <p className="text-text-hint text-sm font-sans text-center">
