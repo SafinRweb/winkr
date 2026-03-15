@@ -26,9 +26,6 @@ import {
   PersonalInfo, Privacy, ChangePassword, BlockedUsers,
 } from '@/screens/profile/ProfileScreens'
 
-// ─────────────────────────────────────────────
-// BOTTOM NAV
-// ─────────────────────────────────────────────
 const NAV_ITEMS = [
   { path: '/app/home',       Icon: Compass,      label: 'Discover'   },
   { path: '/app/approaches', Icon: Heart,         label: 'Approaches' },
@@ -82,45 +79,34 @@ function BottomNav() {
   )
 }
 
-// ─────────────────────────────────────────────
-// ROOT REDIRECT — no hook calls inside JSX
-// ─────────────────────────────────────────────
 function RootRedirect() {
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn)
+  const authReady  = useAuthStore((s) => s.authReady)
+  if (!authReady) return null
   return <Navigate to={isLoggedIn ? '/app/home' : '/welcome'} replace />
 }
 
-// ─────────────────────────────────────────────
-// PROTECTED ROUTE
-// ─────────────────────────────────────────────
 function Protected({ children }) {
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn)
+  const authReady  = useAuthStore((s) => s.authReady)
+  if (!authReady) return null
   return isLoggedIn ? children : <Navigate to="/welcome" replace />
 }
 
-// ─────────────────────────────────────────────
-// APP
-// ─────────────────────────────────────────────
 export default function App() {
   return (
     <>
       <Routes>
         <Route path="/"                    element={<RootRedirect />} />
-
-        {/* Auth — public */}
         <Route path="/welcome"             element={<Welcome />} />
         <Route path="/login"               element={<Login />} />
         <Route path="/register"            element={<Register />} />
         <Route path="/forgot-password"     element={<ForgotPassword />} />
         <Route path="/confirm-email"       element={<ConfirmEmail />} />
-
-        {/* Setup wizard — public */}
         <Route path="/setup/basic"         element={<BasicInfo />} />
         <Route path="/setup/personality"   element={<Personality />} />
         <Route path="/setup/lifestyle"     element={<Lifestyle />} />
         <Route path="/setup/photos"        element={<PhotoUpload />} />
-
-        {/* Main app — protected */}
         <Route path="/app/home"            element={<Protected><Home /></Protected>} />
         <Route path="/app/approaches"      element={<Protected><Approaches /></Protected>} />
         <Route path="/app/chats"           element={<Protected><Chats /></Protected>} />
@@ -129,8 +115,6 @@ export default function App() {
         <Route path="/app/wink/:id"        element={<Protected><WinkFlow /></Protected>} />
         <Route path="/app/notifications"   element={<Protected><Notifications /></Protected>} />
         <Route path="/app/premium"         element={<Protected><Premium /></Protected>} />
-
-        {/* Profile — protected */}
         <Route path="/app/profile"         element={<Protected><ProfileTab /></Protected>} />
         <Route path="/app/my-profile"      element={<Protected><MyProfileView /></Protected>} />
         <Route path="/app/edit-profile"    element={<Protected><EditProfile /></Protected>} />
@@ -141,11 +125,8 @@ export default function App() {
         <Route path="/app/privacy"         element={<Protected><Privacy /></Protected>} />
         <Route path="/app/change-password" element={<Protected><ChangePassword /></Protected>} />
         <Route path="/app/blocked-users"   element={<Protected><BlockedUsers /></Protected>} />
-
-        {/* Fallback — must be last */}
         <Route path="*"                    element={<Navigate to="/welcome" replace />} />
       </Routes>
-
       <BottomNav />
     </>
   )
