@@ -53,11 +53,6 @@ const HIDE_NAV = [
   '/app/notifications', '/app/reviews', '/app/help','/confirm-email',
 ]
 
-function Protected({ children }) {
-  const isLoggedIn = useAuthStore((s) => s.isLoggedIn)
-  return isLoggedIn ? children : <Navigate to="/welcome" replace />
-}
-
 function BottomNav() {
   const location = useLocation()
   const navigate = useNavigate()
@@ -99,7 +94,7 @@ function BottomNav() {
 // ─────────────────────────────────────────────
 function Protected({ children }) {
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn)
-  return isLoggedIn ? children : <Navigate to="/login" replace />
+  return isLoggedIn ? children : <Navigate to="/welcome" replace />
 }
 
 // ─────────────────────────────────────────────
