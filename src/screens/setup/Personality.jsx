@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { ErrorBanner, StepBar, LoadingDots } from '@/components/ui/index.jsx'
 import { SingleSelectChips } from '@/components/ui/index.jsx'
 import { RELATIONSHIP_GOALS, PERSONALITY_TYPES } from '@/lib/mockData'
-import { savePersonality } from '@/lib/profile.js'
+import { savePersonalityLocal } from '@/lib/profile.js'
 
 export default function Personality() {
   const navigate         = useNavigate()
@@ -32,21 +32,13 @@ export default function Personality() {
     setLoading(true)
     setError('')
     try {
-      await savePersonality({
-        bio,
-        relationshipGoal: goal,
-        personalityType:  ptype,
-        mbti,
-        favoriteMusic:    music,
-        favoriteSinger:   singer,
-        favoriteBand:     band,
-        favoriteColor:    color,
-        special,
-      })
-      navigate('/setup/lifestyle')
-    } catch (err) {
-      setError(err.message)
-    } finally {
+        savePersonalityLocal({ bio, relationshipGoal: goal, personalityType: ptype,
+          mbti, favoriteMusic: music, favoriteSinger: singer,
+          favoriteBand: band, favoriteColor: color, special })
+        navigate('/setup/lifestyle')
+      } catch (err) {
+        setError(err.message)
+      } finally {
       setLoading(false)
     }
   }

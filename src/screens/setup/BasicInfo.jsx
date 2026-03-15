@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ErrorBanner, StepBar } from '@/components/ui/index.jsx'
-import { saveBasicInfo } from '@/lib/profile.js'
+import { saveBasicInfoLocal } from '@/lib/profile.js'
 import { LoadingDots } from '@/components/ui/index.jsx'
 
 const CITIES = [
@@ -46,12 +46,7 @@ export default function BasicInfo() {
     setLoading(true)
     setError('')
     try {
-      await saveBasicInfo({
-        city,
-        age,
-        heightCm: height,
-        education: edu === 'Other' ? otherEdu.trim() : edu,
-      })
+      saveBasicInfoLocal({ city, age, heightCm: height, education: edu === 'Other' ? otherEdu.trim() : edu })
       navigate('/setup/personality')
     } catch (err) {
       setError(err.message)

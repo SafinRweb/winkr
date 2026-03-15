@@ -5,6 +5,20 @@ import App from './App'
 import './index.css'
 import { supabase } from '@/lib/supabase'
 import { useAuthStore } from '@/store'
+import { flushSetupToSupabase } from '@/lib/profile.js'
+
+supabase.auth.onAuthStateChange(async (event, session) => {
+  useAuthStore.setState({
+    isLoggedIn:   !!session,
+    supabaseUser: session?.user ?? null,
+  })
+
+  // After email confirmed and signed in — push local setup data to Supabase
+  if (event === 'SIGNED_IN' && session?.user?.email_confirmed_at) {
+    await flushSetupToSupabase()
+    window.location.href = '/app/home'
+  }
+})
 
 function Root() {
   const [ready, setReady] = useState(false)
