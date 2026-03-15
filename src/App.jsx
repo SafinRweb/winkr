@@ -2,55 +2,48 @@ import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-
 import { Compass, Heart, MessageCircle, User } from 'lucide-react'
 import { useAuthStore } from '@/store'
 
-// Auth
-import Welcome       from '@/screens/auth/Welcome'
-import Login         from '@/screens/auth/Login'
-import Register      from '@/screens/auth/Register'
+import Welcome        from '@/screens/auth/Welcome'
+import Login          from '@/screens/auth/Login'
+import Register       from '@/screens/auth/Register'
 import ForgotPassword from '@/screens/auth/ForgotPassword'
-
-// Setup
-import BasicInfo     from '@/screens/setup/BasicInfo'
-import Personality   from '@/screens/setup/Personality'
+import ConfirmEmail   from '@/screens/auth/ConfirmEmail'
+import BasicInfo      from '@/screens/setup/BasicInfo'
+import Personality    from '@/screens/setup/Personality'
 import { Lifestyle, PhotoUpload } from '@/screens/setup/SetupScreens'
-
-// App
-import Home          from '@/screens/app/Home'
-import MatchPreview  from '@/screens/app/MatchPreview'
-import Approaches    from '@/screens/app/Approaches'
-import Chats         from '@/screens/app/Chats'
-import Chat          from '@/screens/app/Chat'
-import WinkFlow      from '@/screens/app/WinkFlow'
-import Notifications from '@/screens/app/Notifications'
-import Premium       from '@/screens/app/Premium'
-
-// Profile
-import ProfileTab    from '@/screens/profile/ProfileTab'
-import MyProfileView from '@/screens/profile/MyProfileView'
-import EditProfile   from '@/screens/profile/EditProfile'
+import Home           from '@/screens/app/Home'
+import MatchPreview   from '@/screens/app/MatchPreview'
+import Approaches     from '@/screens/app/Approaches'
+import Chats          from '@/screens/app/Chats'
+import Chat           from '@/screens/app/Chat'
+import WinkFlow       from '@/screens/app/WinkFlow'
+import Notifications  from '@/screens/app/Notifications'
+import Premium        from '@/screens/app/Premium'
+import ProfileTab     from '@/screens/profile/ProfileTab'
+import MyProfileView  from '@/screens/profile/MyProfileView'
+import EditProfile    from '@/screens/profile/EditProfile'
 import {
   Preferences, Reviews, HelpSupport,
   PersonalInfo, Privacy, ChangePassword, BlockedUsers,
 } from '@/screens/profile/ProfileScreens'
-import ConfirmEmail from '@/screens/auth/ConfirmEmail'
 
 // ─────────────────────────────────────────────
 // BOTTOM NAV
 // ─────────────────────────────────────────────
 const NAV_ITEMS = [
-  { path: '/app/home',       Icon: Compass,       label: 'Discover'   },
-  { path: '/app/approaches', Icon: Heart,          label: 'Approaches' },
-  { path: '/app/chats',      Icon: MessageCircle,  label: 'Chats'      },
-  { path: '/app/profile',    Icon: User,           label: 'Profile'    },
+  { path: '/app/home',       Icon: Compass,      label: 'Discover'   },
+  { path: '/app/approaches', Icon: Heart,         label: 'Approaches' },
+  { path: '/app/chats',      Icon: MessageCircle, label: 'Chats'      },
+  { path: '/app/profile',    Icon: User,          label: 'Profile'    },
 ]
 
-// Routes where the nav should be hidden
 const HIDE_NAV = [
-  '/welcome', '/login', '/register', '/forgot-password',
+  '/welcome', '/login', '/register', '/forgot-password', '/confirm-email',
   '/setup/',
   '/app/chat/', '/app/match/', '/app/wink/',
   '/app/edit-profile', '/app/my-profile',
   '/app/preferences', '/app/premium',
-  '/app/notifications', '/app/reviews', '/app/help','/confirm-email',
+  '/app/notifications', '/app/reviews', '/app/help',
+  '/app/personal-info', '/app/privacy', '/app/change-password', '/app/blocked-users',
 ]
 
 function BottomNav() {
@@ -66,7 +59,7 @@ function BottomNav() {
         {NAV_ITEMS.map(({ path, Icon, label }) => {
           const active = cur === path || cur.startsWith(path + '/')
           return (
-           <button
+            <button
               key={path}
               onClick={() => navigate(path)}
               className="flex-1 flex flex-col items-center justify-center gap-[3px] relative"
@@ -90,6 +83,14 @@ function BottomNav() {
 }
 
 // ─────────────────────────────────────────────
+// ROOT REDIRECT — no hook calls inside JSX
+// ─────────────────────────────────────────────
+function RootRedirect() {
+  const isLoggedIn = useAuthStore((s) => s.isLoggedIn)
+  return <Navigate to={isLoggedIn ? '/app/home' : '/welcome'} replace />
+}
+
+// ─────────────────────────────────────────────
 // PROTECTED ROUTE
 // ─────────────────────────────────────────────
 function Protected({ children }) {
@@ -104,46 +105,45 @@ export default function App() {
   return (
     <>
       <Routes>
-        {/* Default */}
-        <Route path="/" element={
-          <Navigate to={useAuthStore.getState().isLoggedIn ? '/app/home' : '/welcome'} replace />} />
-        {/* Auth */}
-        <Route path="/welcome"          element={<Welcome />} />
-        <Route path="/login"            element={<Login />} />
-        <Route path="/register"         element={<Register />} />
-        <Route path="/forgot-password"  element={<ForgotPassword />} />
+        <Route path="/"                    element={<RootRedirect />} />
 
-        {/* Setup wizard */}
-        <Route path="/setup/basic"        element={<BasicInfo />} />
-        <Route path="/setup/personality"  element={<Personality />} />
-        <Route path="/setup/lifestyle"    element={<Lifestyle />} />
-        <Route path="/setup/photos"       element={<PhotoUpload />} />
+        {/* Auth — public */}
+        <Route path="/welcome"             element={<Welcome />} />
+        <Route path="/login"               element={<Login />} />
+        <Route path="/register"            element={<Register />} />
+        <Route path="/forgot-password"     element={<ForgotPassword />} />
+        <Route path="/confirm-email"       element={<ConfirmEmail />} />
+
+        {/* Setup wizard — public */}
+        <Route path="/setup/basic"         element={<BasicInfo />} />
+        <Route path="/setup/personality"   element={<Personality />} />
+        <Route path="/setup/lifestyle"     element={<Lifestyle />} />
+        <Route path="/setup/photos"        element={<PhotoUpload />} />
 
         {/* Main app — protected */}
-        <Route path="/app/home"          element={<Protected><Home /></Protected>} />
-        <Route path="/app/approaches"    element={<Protected><Approaches /></Protected>} />
-        <Route path="/app/chats"         element={<Protected><Chats /></Protected>} />
-        <Route path="/app/chat/:id"      element={<Protected><Chat /></Protected>} />
-        <Route path="/app/match/:id"     element={<Protected><MatchPreview /></Protected>} />
-        <Route path="/app/wink/:id"      element={<Protected><WinkFlow /></Protected>} />
-        <Route path="/app/notifications" element={<Protected><Notifications /></Protected>} />
-        <Route path="/app/premium"       element={<Protected><Premium /></Protected>} />
+        <Route path="/app/home"            element={<Protected><Home /></Protected>} />
+        <Route path="/app/approaches"      element={<Protected><Approaches /></Protected>} />
+        <Route path="/app/chats"           element={<Protected><Chats /></Protected>} />
+        <Route path="/app/chat/:id"        element={<Protected><Chat /></Protected>} />
+        <Route path="/app/match/:id"       element={<Protected><MatchPreview /></Protected>} />
+        <Route path="/app/wink/:id"        element={<Protected><WinkFlow /></Protected>} />
+        <Route path="/app/notifications"   element={<Protected><Notifications /></Protected>} />
+        <Route path="/app/premium"         element={<Protected><Premium /></Protected>} />
 
         {/* Profile — protected */}
-        <Route path="/app/profile"       element={<Protected><ProfileTab /></Protected>} />
-        <Route path="/app/my-profile"    element={<Protected><MyProfileView /></Protected>} />
-        <Route path="/app/edit-profile"  element={<Protected><EditProfile /></Protected>} />
-        <Route path="/app/preferences"   element={<Protected><Preferences /></Protected>} />
+        <Route path="/app/profile"         element={<Protected><ProfileTab /></Protected>} />
+        <Route path="/app/my-profile"      element={<Protected><MyProfileView /></Protected>} />
+        <Route path="/app/edit-profile"    element={<Protected><EditProfile /></Protected>} />
+        <Route path="/app/preferences"     element={<Protected><Preferences /></Protected>} />
         <Route path="/app/reviews"         element={<Protected><Reviews /></Protected>} />
-        <Route path="/app/help"          element={<Protected><HelpSupport /></Protected>} />
-        <Route path="/app/personal-info" element={<Protected><PersonalInfo /></Protected>} />
-        <Route path="/app/privacy"       element={<Protected><Privacy /></Protected>} />
+        <Route path="/app/help"            element={<Protected><HelpSupport /></Protected>} />
+        <Route path="/app/personal-info"   element={<Protected><PersonalInfo /></Protected>} />
+        <Route path="/app/privacy"         element={<Protected><Privacy /></Protected>} />
         <Route path="/app/change-password" element={<Protected><ChangePassword /></Protected>} />
-        <Route path="/app/blocked-users" element={<Protected><BlockedUsers /></Protected>} />
+        <Route path="/app/blocked-users"   element={<Protected><BlockedUsers /></Protected>} />
 
-        {/* Fallback */}
-        <Route path="*" element={<Navigate to="/welcome" replace />} />
-        <Route path="/confirm-email" element={<ConfirmEmail />} />
+        {/* Fallback — must be last */}
+        <Route path="*"                    element={<Navigate to="/welcome" replace />} />
       </Routes>
 
       <BottomNav />
