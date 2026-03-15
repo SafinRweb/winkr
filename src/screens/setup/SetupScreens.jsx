@@ -1,24 +1,18 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Loader } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import {
   StepBar, SectionHeader,
-  MultiSelectChips, AddCustomChip,
+  MultiSelectChips, AddCustomChip, LoadingDots,
 } from '@/components/ui/index.jsx'
-import {
-  HOBBY_OPTIONS, INTEREST_OPTIONS, LOOKING_FOR_OPTIONS,
-  PHOTO_URLS,
-} from '@/lib/mockData'
-import { useAuthStore } from '@/store'
-import { uploadPhotos } from '@/lib/profile.js'
-import { LoadingDots } from '@/components/ui/index.jsx'
-import { saveLifestyleLocal, uploadPhotos } from '@/lib/profile.js'
+import { HOBBY_OPTIONS, INTEREST_OPTIONS, LOOKING_FOR_OPTIONS } from '@/lib/mockData'
+import { saveLifestyleLocal } from '@/lib/profile.js'
 
 // ─────────────────────────────────────────────
 // LIFESTYLE
 // ─────────────────────────────────────────────
 export function Lifestyle() {
-  const navigate         = useNavigate()
+  const navigate                  = useNavigate()
   const [hobbies,   setHobbies]   = useState([])
   const [interests, setInterests] = useState([])
   const [looking,   setLooking]   = useState([])
@@ -28,15 +22,13 @@ export function Lifestyle() {
   const toggle = (setter) => (v) =>
     setter((prev) => prev.includes(v) ? prev.filter((x) => x !== v) : [...prev, v])
 
-  const handleContinue = async () => {
+  const handleContinue = () => {
     setLoading(true)
-    setError('')
     try {
       saveLifestyleLocal({ hobbies, interests, lookingFor: looking })
       navigate('/setup/photos')
     } catch (err) {
       setError(err.message)
-    } finally {
       setLoading(false)
     }
   }
@@ -78,15 +70,8 @@ export function Lifestyle() {
         </div>
       </div>
 
-      <button
-        onClick={handleContinue}
-        disabled={loading}
-        className="winkr-btn mt-8 relative"
-      >
-        {loading && (
-          <Loader size={16} className="animate-spin absolute left-6 top-1/2 -translate-y-1/2" />
-        )}
-        {loading ? 'Saving...' : 'Continue'}
+      <button onClick={handleContinue} disabled={loading} className="winkr-btn mt-8">
+        {loading ? <LoadingDots /> : 'Continue'}
       </button>
     </div>
   )
@@ -96,52 +81,29 @@ export function Lifestyle() {
 // PHOTO UPLOAD
 // ─────────────────────────────────────────────
 export function PhotoUpload() {
-  const navigate         = useNavigate()
-  const login            = useAuthStore((s) => s.login)
-  const [photos,  setPhotos]  = useState([])   // File objects from input
-  const [previews,setPreviews]= useState([])   // Preview URLs for display
-  const [loading, setLoading] = useState(false)
-  const [error,   setError]   = useState('')
-  const [progress,setProgress]= useState('')
+  const navigate                    = useNavigate()
+  const [photos,   setPhotos]       = useState([])
+  const [previews, setPreviews]     = useState([])
+  const [error,    setError]        = useState('')
 
   const handleFileSelect = (e) => {
-    const files = Array.from(e.target.files)
+    const files     = Array.from(e.target.files)
     if (!files.length) return
-
-    // Max 5 photos total
     const remaining = 5 - photos.length
     const selected  = files.slice(0, remaining)
-
-    setPhotos((prev) => [...prev, ...selected])
-    setPreviews((prev) => [
-      ...prev,
-      ...selected.map((f) => URL.createObjectURL(f)),
-    ])
+    setPhotos((prev)   => [...prev, ...selected])
+    setPreviews((prev) => [...prev, ...selected.map((f) => URL.createObjectURL(f))])
   }
 
   const removePhoto = (index) => {
-    setPhotos((prev)    => prev.filter((_, i) => i !== index))
-    setPreviews((prev)  => prev.filter((_, i) => i !== index))
+    setPhotos((prev)   => prev.filter((_, i) => i !== index))
+    setPreviews((prev) => prev.filter((_, i) => i !== index))
   }
 
-  const handleFinish = async () => {
+  const handleFinish = () => {
     if (photos.length === 0) { setError('Please add at least 1 photo'); return }
-
-    setLoading(true)
-    setError('')
-    try {
-      setProgress('Uploading photos...')
-      await uploadPhotos(photos)
-      setProgress('Almost done...')
-      // No need to send email — Supabase already sent it at signup
-      // Just navigate to the confirmation waiting screen
-      navigate('/confirm-email')
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-      setProgress('')
-    }
+    localStorage.setItem('winkr_pending_photos', 'true')
+    navigate('/confirm-email')
   }
 
   return (
@@ -162,65 +124,36 @@ export function PhotoUpload() {
         </div>
       )}
 
-      {/* Photo grid */}
       <div className="grid grid-cols-2 gap-3 mb-4">
         {[0, 1, 2, 3, 4].map((i) => {
           const preview = previews[i]
           return preview ? (
-            <div
-              key={i}
-              className={`relative rounded-2xl overflow-hidden ${i === 0 ? 'col-span-2 h-52' : 'h-36'}`}
-            >
+            <div key={i} className={`relative rounded-2xl overflow-hidden ${i === 0 ? 'col-span-2 h-52' : 'h-36'}`}>
               <img src={preview} alt="" className="w-full h-full object-cover" />
-              {!loading && (
-                <button
-                  onClick={() => removePhoto(i)}
-                  className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/70 flex items-center justify-center text-white text-sm font-bold hover:bg-black/90 transition-colors"
-                >
-                  ×
-                </button>
-              )}
+              <button
+                onClick={() => removePhoto(i)}
+                className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/70 flex items-center justify-center text-white text-sm font-bold"
+              >
+                ×
+              </button>
             </div>
           ) : (
-            <label
-              key={i}
-              className={`rounded-2xl border-2 border-dashed border-coral-dim flex flex-col items-center justify-center cursor-pointer hover:border-coral hover:bg-coral-faint transition-colors ${i === 0 ? 'col-span-2 h-52' : 'h-36'} ${loading ? 'pointer-events-none opacity-40' : ''}`}
-            >
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                className="hidden"
-                onChange={handleFileSelect}
-                disabled={loading}
-              />
+            <label key={i}
+              className={`rounded-2xl border-2 border-dashed border-coral-dim flex flex-col items-center justify-center cursor-pointer hover:border-coral hover:bg-coral-faint transition-colors ${i === 0 ? 'col-span-2 h-52' : 'h-36'}`}>
+              <input type="file" accept="image/*" multiple className="hidden" onChange={handleFileSelect} />
               <Plus size={24} className="text-coral mb-1" />
-              <span className="text-coral text-xs font-sans">
-                {i === 0 ? 'Add main photo' : 'Add photo'}
-              </span>
+              <span className="text-coral text-xs font-sans">{i === 0 ? 'Add main photo' : 'Add photo'}</span>
             </label>
           )
         })}
       </div>
 
-      <p className="text-text-hint text-xs font-sans mb-2">
-        {photos.length}/5 photos added · At least 1 required
+      <p className="text-text-hint text-xs font-sans mb-6">
+        {photos.length}/5 photos · At least 1 required
       </p>
 
-      {/* Upload progress */}
-      {loading && progress && (
-        <div className="flex items-center gap-3 mb-4 px-4 py-3 rounded-2xl bg-coral-faint border border-coral/20">
-          <Loader size={14} className="animate-spin text-coral shrink-0" />
-          <p className="text-coral text-sm font-sans">{progress}</p>
-        </div>
-      )}
-
-      <button
-        onClick={handleContinue}
-        disabled={loading}
-        className="winkr-btn mt-8"
-      >
-        {loading ? <LoadingDots /> : 'Continue'}
+      <button onClick={handleFinish} disabled={photos.length === 0} className="winkr-btn mt-auto">
+        Finish Setup
       </button>
     </div>
   )
