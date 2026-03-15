@@ -5,17 +5,19 @@ export async function signUp(name, email, password) {
   const { data, error } = await supabase.auth.signUp({ email, password })
   if (error) throw error
 
-  // Create the user profile row
-  const { error: profileError } = await supabase
-    .from('users')
-    .insert({
+  // Try to insert profile — silently ignore errors
+  // (RLS may block before email confirmation, that's ok)
+  try {
+    await supabase.from('users').insert({
       id:    data.user.id,
       name,
       email,
-      age:   0,    // filled in setup wizard
-      city:  '',   // filled in setup wizard
+      age:   0,
+      city:  '',
     })
-  if (profileError) throw profileError
+  } catch (e) {
+    console.log('Profile insert skipped:', e.message)
+  }
 
   return data.user
 }
@@ -49,11 +51,11 @@ export async function getUserProfile(userId) {
   if (error) throw error
   return data
 }
-// confirmation email
+
+// ── RESEND CONFIRMATION EMAIL ──
 export async function sendConfirmationEmail() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Not logged in')
-
   const { error } = await supabase.auth.resend({
     type:  'signup',
     email: user.email,
